@@ -11,4 +11,17 @@
 5. Register the node and edges in `graph_builder.py`.
 6. Add tests and update docs.
 
+## 2. Existing Example Nodes
+
+- `planner_node`:
+  - Reads: `user_input`
+  - Writes: `message_type`
+- `code_qa_node`:
+  - Reads: `user_input`, `message_type`
+  - Uses RAG helpers from `rag/` and `agents/ingestion_helper.py`
+  - Writes: `retrieved_chunks`, `reply`
+
+New agents should follow a similar pattern: read from `GraphState`, call their own logic/tools, write updates back to `GraphState`, and be wired into the graph in `graph_builder.py`.
+
+
 Detailed, code-level examples will be added after Phase 3.

@@ -12,6 +12,12 @@
 - LangGraph multi-agent workflow (coming in Phase 2+).
 - RAG for code understanding (coming in Phase 3+).
 - MCP tools for external actions (coming in Phase 4+).
+- Currently, the Code-QA part uses a fake RAG:
+  - Sample text is ingested into an in-memory store.
+  - Queries are embedded with a dummy function.
+  - Top chunks are returned and used to build a simple `[Fake RAG]` reply.
+  - This is a teaching step before plugging in real embeddings and LLMs.
+
 
 ## 3. Cross-Question Scenarios (Planned)
 

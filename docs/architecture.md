@@ -4,15 +4,23 @@
 
 ## 1. High-Level Overview
 
-(Phase 1)
-- FastAPI app with a single root endpoint returning a static JSON.
+- FastAPI (`app/main.py`) exposes:
+  - `GET /` – health/info endpoint.
+  - `POST /api/chat` – main entry to the LangGraph workflow.
+- LangGraph (`agents/graph_builder.py`) defines a stateful graph:
+  - Nodes: `planner_node`, `code_qa_node`.
+  - Flow: `START -> planner_node -> code_qa_node -> END`.
+- RAG components (`rag/`) provide:
+  - Simple chunking, dummy embeddings, and an in-memory vector store.
 
-(Phase 2+)
-- LangGraph multi-agent workflow will be described here.
+## 2. Current Status (up to Phase 3)
 
-## 2. Components
+- State (`GraphState`) includes:
+  - `user_input`, `message_type`, `reply`, `retrieved_chunks`.
+- Fake RAG:
+  - `agents/ingestion_helper.py` initializes an in-memory vector store with sample text.
+  - `code_qa_node`:
+    - Embeds `user_input` with `dummy_embedding`.
+    - Searches `InMemoryVectorStore`.
+    - Returns retrieved snippets and a `[Fake RAG]` style reply.
 
-- FastAPI (`app/main.py`)
-- Agents and LangGraph (to be added)
-- RAG (to be added)
-- MCP tools (to be added)
