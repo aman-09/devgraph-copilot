@@ -1,52 +1,73 @@
-from typing import Dict
-
 from langgraph.graph import StateGraph, START, END
 
 from .graph_state import GraphState
+from .ingestion_helper import get_vector_store
+from rag.embeddings import dummy_embedding
 
 
 def planner_node(state: GraphState) -> GraphState:
     """
-    Very simple 'planner' for Phase 2.5.
+    Very simple 'planner' for now.
 
-    It looks at user_input and classifies it:
-    - if it ends with '?', treat as 'question'
-    - otherwise 'statement'
+    It only classifies the message type.
+    Later it can decide which agent to call (code_qa, docs, etc.).
     """
     user_input = state.get("user_input", "")
     msg_type = "question" if user_input.strip().endswith("?") else "statement"
     return {"message_type": msg_type}
 
 
-def echo_node(state: GraphState) -> GraphState:
+def code_qa_node(state: GraphState) -> GraphState:
     """
-    Simple node that uses both user_input and message_type.
+    Fake Code-QA node using in-memory vector store and dummy embeddings.
+
+    - Embeds the user_input.
+    - Searches the vector store.
+    - Returns the top chunks as 'retrieved_chunks' and a simple reply.
     """
     user_input = state.get("user_input", "")
-    msg_type = state.get("message_type", "unknown")
+    if not user_input:
+        return {"reply": "I did not receive any input.", "retrieved_chunks": []}
 
-    reply_text = (
-        f"Echo from LangGraph (type={msg_type}): you said -> {user_input}"
+    # 1) Get vector store (init if needed)
+    store = get_vector_store()
+
+    # 2) Create embedding for query
+    query_emb = dummy_embedding(user_input)
+
+    # 3) Search in store
+    top_chunks = store.search(query_emb, top_k=3)
+
+    retrieved_texts = [c.text for c in top_chunks]
+
+    # 4) Build a simple reply: echo + show retrieved snippets
+    joined_snippets = " | ".join(retrieved_texts) if retrieved_texts else "No relevant text found."
+
+    reply = (
+        f"[Fake RAG] You asked: '{user_input}'. "
+        f"Top snippets from knowledge base: {joined_snippets}"
     )
 
-    return {"reply": reply_text}
+    return {
+        "retrieved_chunks": retrieved_texts,
+        "reply": reply,
+    }
 
 
 def build_graph():
     """
-    Build and compile a minimal LangGraph graph for Phase 2.5:
-    START -> planner_node -> echo_node -> END
+    Build and compile a LangGraph graph:
+
+    START -> planner_node -> code_qa_node -> END
     """
     builder = StateGraph(GraphState)
 
-    # Register nodes
     builder.add_node("planner_node", planner_node)
-    builder.add_node("echo_node", echo_node)
+    builder.add_node("code_qa_node", code_qa_node)
 
-    # Edges: START -> planner_node -> echo_node -> END
     builder.add_edge(START, "planner_node")
-    builder.add_edge("planner_node", "echo_node")
-    builder.add_edge("echo_node", END)
+    builder.add_edge("planner_node", "code_qa_node")
+    builder.add_edge("code_qa_node", END)
 
     graph = builder.compile()
     return graph
@@ -56,9 +77,6 @@ graph_app = build_graph()
 
 
 
-# echo_node is your first “agent” node (just logic).
-# StateGraph(GraphState) tells LangGraph what state type to use.
-# ​graph_app is what FastAPI will call.
 
-# Now the flow is: START → planner_node → echo_node → END.
-# ​No change needed in app/main.py for this step; /api/chat will now just get a richer reply.
+# Planner still sets message_type (we’ll use it later).
+# code_qa_node uses the “fake RAG” components to retrieve snippets and build a reply.

@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List
 from dataclasses import dataclass
 
 
@@ -22,11 +22,11 @@ class InMemoryVectorStore:
             self._store.append(StoredChunk(text=text, embedding=emb))
 
     def search(self, query_embedding: List[float], top_k: int = 3) -> List[StoredChunk]:
-        # Very naive: use negative distance on first dimension only
         if not self._store:
             return []
 
         def score(chunk: StoredChunk) -> float:
+            # naive: use first dimension difference
             return -abs(chunk.embedding[0] - query_embedding[0])
 
         sorted_chunks = sorted(self._store, key=score)

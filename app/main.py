@@ -20,13 +20,14 @@ app = FastAPI(title=f"{settings.app_name} - Phase 2")
 @app.get("/")
 async def read_root():
     return {
-        "message": "DevGraph Copilot backend is running (Phase 2)",
+        "message": "DevGraph Copilot backend is running (Phase 3 - Fake RAG)",
         "next_steps": [
-            "Add real LLM-backed agent logic",
-            "Add RAG (chunking + embeddings)",
-            "Integrate MCP tools"
+            "Replace dummy embeddings with real embeddings",
+            "Ingest real repository content instead of sample text",
+            "Add true LLM-based Code-QA agent and more agents",
         ],
     }
+
 
 
 @app.post("/api/chat", response_model=ChatResponse)

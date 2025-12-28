@@ -300,3 +300,17 @@ They are placeholders to make Phase 3 integration easier.
 If `/` returns Phase 2 JSON and `POST /api/chat` returns the echo with the correct `type=question/statement`, you are fully done with these phases and ready to start wiring real RAG and more agents next.
 
 ---
+
+
+### 5.3 Phase 3 – Fake RAG wired into graph
+
+- Extended `GraphState` with `retrieved_chunks`.
+- Added `agents/ingestion_helper.py`:
+  - Global `InMemoryVectorStore` initialized with sample text.
+- Updated `agents/graph_builder.py`:
+  - Graph now: `START -> planner_node -> code_qa_node -> END`.
+  - `code_qa_node`:
+    - Embeds `user_input` using `dummy_embedding`.
+    - Searches `InMemoryVectorStore`.
+    - Writes `retrieved_chunks` and a `[Fake RAG]` reply.
+- `/api/chat` now returns a reply composed from retrieved snippets.
