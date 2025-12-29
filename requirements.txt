@@ -4,3 +4,6 @@ langchain
 langgraph
 python-dotenv
 pydantic-settings
+sentence-transformers
+torch
+langchain-community

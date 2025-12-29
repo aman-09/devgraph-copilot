@@ -18,6 +18,11 @@
   - Top chunks are returned and used to build a simple `[Fake RAG]` reply.
   - This is a teaching step before plugging in real embeddings and LLMs.
 
+### RAG, Embeddings, and LLM Strategy
+For embeddings I use a **local sentence-transformers model via LangChain**, so the RAG pipeline works offline and does not depend on any external API.
+
+The LLM layer is **pluggable**; right now I use a free-tier hosted LLM, but the architecture supports swapping to any provider or even a fully local model by changing a small adapter layer.
+
 
 ## 3. Cross-Question Scenarios (Planned)
 

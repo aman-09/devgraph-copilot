@@ -1,7 +1,7 @@
 from typing import Optional
 
 from rag.chunking import simple_line_chunker
-from rag.embeddings import embed_chunks, dummy_embedding
+from rag.embeddings import embed_chunks, embed_text
 from rag.vectorstore import InMemoryVectorStore, StoredChunk
 
 # Global in-memory vector store for Phase 3 demo

@@ -2,7 +2,7 @@ from langgraph.graph import StateGraph, START, END
 
 from .graph_state import GraphState
 from .ingestion_helper import get_vector_store
-from rag.embeddings import dummy_embedding
+from rag.embeddings import embed_text
 
 
 def planner_node(state: GraphState) -> GraphState:
@@ -33,7 +33,7 @@ def code_qa_node(state: GraphState) -> GraphState:
     store = get_vector_store()
 
     # 2) Create embedding for query
-    query_emb = dummy_embedding(user_input)
+    query_emb = embed_text(user_input)
 
     # 3) Search in store
     top_chunks = store.search(query_emb, top_k=3)
@@ -80,3 +80,8 @@ graph_app = build_graph()
 
 # Planner still sets message_type (we’ll use it later).
 # code_qa_node uses the “fake RAG” components to retrieve snippets and build a reply.
+
+# Now:
+# Ingestion uses embed_chunks → real sentence‑transformers embeddings.
+# Query uses embed_text → real embeddings.
+# Similarity search is still naive but now based on a meaningful vector space.

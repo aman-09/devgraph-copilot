@@ -24,3 +24,8 @@
     - Searches `InMemoryVectorStore`.
     - Returns retrieved snippets and a `[Fake RAG]` style reply.
 
+- Embeddings:
+  - Local sentence-transformers model (`all-MiniLM-L6-v2`) via LangChain's HuggingFaceEmbeddings.
+  - No external API required for RAG; everything runs locally.
+
+
