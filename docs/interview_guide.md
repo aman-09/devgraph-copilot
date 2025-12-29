@@ -46,6 +46,24 @@ The design is intentionally modular so new agents and MCP tools can be added lat
      - Calls the chat model via LangChain with those chunks as context.
   4. The LLM returns a grounded natural answer, which is sent back to the client.[web:236][web:221]
 
+The planner uses ingestion metadata (last_ingestion_time, last_ingestion_source) stored in the graph state to avoid re-ingesting documents on every request.
+
+Talking point:
+Initially, ingestion ran on every request. Later, ingestion was split into a separate step and the planner started checking whether the current vector store is fresh enough. This reduced unnecessary work and is closer to how production RAG systems manage indexing vs. query-time retrieval.
+
+
+### Ingestion strategy and planner decisions
+
+Initially, ingestion ran on every request and rebuilt the in-memory vector store each time.  
+Later, ingestion was separated into its own node and the planner started using **ingestion metadata** stored in `GraphState` (`last_ingestion_time`, `last_ingestion_source`).[web:331][web:336]
+
+For each new request, the planner checks this metadata to decide whether ingestion is needed.  
+If the vector store is fresh enough (for example, ingested within the last 30 minutes), the planner lets the request go directly to the code-QA node, skipping ingestion.[web:331]
+
+This demonstrates a core **agentic RAG** idea: agents use state and metadata to avoid unnecessary work and to separate indexing (ingestion) from query-time retrieval.[web:334][web:341]
+
+
+
 ## 4. Local vs API modes
 
 - Embeddings:

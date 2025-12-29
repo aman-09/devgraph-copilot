@@ -1,41 +1,61 @@
+# graph_builder.py
+import logging
+from datetime import datetime, timedelta
 from langgraph.graph import StateGraph, START, END
 
 from .graph_state import GraphState
-from .ingestion_helper import get_vector_store
+from .ingestion_helper import get_vector_store, init_or_refresh_vector_store, INGESTION_RAN
 from rag.embeddings import embed_text
 from app.config import settings
 from .code_qa_chain import answer_with_context
-from .ingestion_helper import get_vector_store, init_or_refresh_vector_store
 
+logger = logging.getLogger(__name__)
 
+INGESTION_MAX_AGE_MINUTES = 30  # simple policy for now
 
 def planner_node(state: GraphState) -> GraphState:
-    """
-    Very simple 'planner' for now.
-
-    It only classifies the message type.
-    Later it can decide which agent to call (code_qa, docs, etc.).
-    """
     user_input = state.get("user_input", "")
     msg_type = "question" if user_input.strip().endswith("?") else "statement"
-    return {"message_type": msg_type}
+
+    # Use global flag to decide ingestion, since state isn't persisted between runs
+    needs_ingestion = not INGESTION_RAN
+    logger.info(
+        "Planner: message_type=%s, needs_ingestion=%s, user_input='%s'",
+        msg_type,
+        needs_ingestion,
+        user_input,
+    )
+
+    new_state: GraphState = dict(state)
+    new_state["message_type"] = msg_type
+    new_state["needs_ingestion"] = needs_ingestion
+    return new_state
 
 
 
 def ingestion_node(state: GraphState) -> GraphState:
-    """
-    Ingestion node (Phase: local demo).
+    needs_ingestion = state.get("needs_ingestion", True)
+    if not needs_ingestion:
+        logger.info("Ingestion node: needs_ingestion=False, skipping ingestion.")
+        return state
 
-    - Ensures the in-memory vector store is initialized/refreshed
-      from the local 'sample_data' folder.
-    - Does not change the reply; it only prepares data for RAG.
-    """
-    # This will read from sample_data/ and rebuild the store
+    logger.info("Ingestion node: running ingestion and rebuilding vector store.")
     init_or_refresh_vector_store()
 
-    # You could track ingestion metadata in state later (e.g., timestamps)
-    return state
+    new_state: GraphState = dict(state)
+    new_state["last_ingestion_time"] = datetime.utcnow().isoformat()
+    new_state["last_ingestion_source"] = "sample_data"
+    logger.info(
+        "Ingestion node: updated last_ingestion_time=%s, last_ingestion_source=%s.",
+        new_state["last_ingestion_time"],
+        new_state["last_ingestion_source"],
+    )
+    return new_state
 
+
+# The behavior now:
+# First request: last_ingestion_time is missing → planner sets needs_ingestion=True → ingestion runs and writes metadata → code_qa runs.
+# Later requests (within 30 minutes): planner sets needs_ingestion=False → ingestion node becomes a no-op → code_qa runs directly.
 
 
 def code_qa_node(state: GraphState) -> GraphState:

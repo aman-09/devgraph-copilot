@@ -7,6 +7,11 @@ from app.config import settings
 from agents.graph_builder import graph_app
 from agents.graph_state import GraphState
 
+import logging
+
+logging.basicConfig(level=logging.INFO)
+
+
 
 class ChatRequest(BaseModel):
     message: str

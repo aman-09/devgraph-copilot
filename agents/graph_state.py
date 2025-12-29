@@ -13,9 +13,15 @@ class GraphState(TypedDict, total=False):
     """
 
     user_input: str
-    message_type: Optional[str]
-    reply: Optional[str]
-    retrieved_chunks: Optional[List[str]]
+    message_type: str
+    reply: str
+    retrieved_chunks: List[str]
+
+    # New ingestion metadata
+    last_ingestion_time: Optional[str]      # ISO string or simple timestamp
+    last_ingestion_source: Optional[str]    # e.g., "sample_data"
+
+    needs_ingestion: Optional[bool]         # Planner sets this to True if ingestion is needed
 
 
 
