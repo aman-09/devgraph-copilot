@@ -1,3 +1,5 @@
+from typing import List, Optional
+
 from fastapi import FastAPI
 from pydantic import BaseModel
 
@@ -12,6 +14,7 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     reply: str
+    retrieved_chunks: Optional[List[str]] = None
 
 
 app = FastAPI(title=f"{settings.app_name} - Phase 2")
@@ -43,8 +46,9 @@ async def chat_endpoint(request: ChatRequest):
 
     # Extract reply
     reply_text = result_state.get("reply", "")
+    chunks = result_state.get("retrieved_chunks", [])
 
-    return ChatResponse(reply=reply_text)
+    return ChatResponse(reply=reply_text, retrieved_chunks=chunks)
 
 
 

@@ -1,0 +1,12 @@
+DevGraph Copilot is a developer productivity assistant.
+
+It is built with FastAPI, LangGraph, and LangChain.
+The system uses a multi-agent architecture:
+- A planner agent that decides which agents to run.
+- An ingestion agent that reads and indexes project files for RAG.
+- A code QA agent that answers questions using retrieved context.
+
+In a full setup, the ingestion agent would read from a GitHub repository,
+parse code files, and build a vector index for RAG.
+
+Right now, the ingestion agent reads from this local sample_data folder.

@@ -314,3 +314,31 @@ If `/` returns Phase 2 JSON and `POST /api/chat` returns the echo with the corre
     - Searches `InMemoryVectorStore`.
     - Writes `retrieved_chunks` and a `[Fake RAG]` reply.
 - `/api/chat` now returns a reply composed from retrieved snippets.
+
+
+Now you truly have both:
+When USE_LLM=false or OPENAI_API_KEY is empty:
+RAG‑only mode, fully local.
+When USE_LLM=true and a valid key is set:
+RAG + online LLM answers.
+
+How you use this in practice
+Run RAG‑only (no API)
+1. In .env:
+USE_LLM=false
+OPENAI_API_KEY=
+
+2. Restart:
+uvicorn app.main:app --reload
+
+3. POST /api/chat → you’ll see [RAG only] responses using local embeddings + vector store.
+Run RAG + LLM
+1. In .env:
+USE_LLM=true
+OPENAI_API_KEY=sk-...your_real_key...
+LLM_MODEL_NAME=gpt-4o-mini  # or provider’s model id
+
+2. Restart:
+uvicorn app.main:app --reload
+
+3. POST /api/chat → you’ll see [RAG + LLM] responses using local embeddings + vector store + online LLM.
