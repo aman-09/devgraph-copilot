@@ -63,6 +63,20 @@ If the vector store is fresh enough (for example, ingested within the last 30 mi
 This demonstrates a core **agentic RAG** idea: agents use state and metadata to avoid unnecessary work and to separate indexing (ingestion) from query-time retrieval.[web:334][web:341]
 
 
+### Simple tool-style agent: file reader
+
+I added a small **file-reader node** as a first tool-style agent.  
+Before planning and RAG, this node reads a local text file from the `sample_data` folder (for example `info.txt`) and stores its content in the shared `GraphState` as `file_content`.[web:411][web:418]
+
+The rest of the graph then runs as usual: the planner classifies the message, ingestion ensures the vector store is ready, and the code-QA node does retrieval and answering.  
+This demonstrates how agents in the graph can call simple tools (like reading a file) and pass their results forward through state before the main RAG flow runs.[web:395][web:430]
+
+With this, I can say that my system already has:
+- A planner node.
+- A RAG-based code-QA node.
+- A simple tool-style agent (file reader) that shows how to integrate external data into the state before answering.
+
+
 
 ## 4. Local vs API modes
 

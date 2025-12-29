@@ -1,0 +1,1 @@
+This is info.txt inside sample_data. It is loaded by file_reader_node.

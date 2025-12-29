@@ -13,6 +13,30 @@ logger = logging.getLogger(__name__)
 
 INGESTION_MAX_AGE_MINUTES = 30  # simple policy for now
 
+
+from pathlib import Path
+
+def file_reader_node(state: GraphState) -> GraphState:
+    """
+    Simple tool-style node:
+    reads a fixed text file from sample_data and stores its content in state.
+    """
+    base_dir = Path(__file__).resolve().parent.parent  # project root-ish
+    data_dir = base_dir / "sample_data"
+    file_path = data_dir / "info.txt"  # create this file yourself
+
+    try:
+        content = file_path.read_text(encoding="utf-8", errors="ignore")
+    except Exception as e:
+        content = f"[file_reader_node] Failed to read {file_path}: {e}"
+
+    new_state: GraphState = dict(state)
+    new_state["file_content"] = content
+    logger.info("file_reader_node: read %d characters from %s", len(content), file_path)
+    return new_state
+
+
+
 def planner_node(state: GraphState) -> GraphState:
     user_input = state.get("user_input", "")
     msg_type = "question" if user_input.strip().endswith("?") else "statement"
@@ -116,23 +140,25 @@ def build_graph():
     """
     Build and compile a LangGraph graph:
 
-    START -> planner_node -> code_qa_node -> END
+    START -> file_reader_node -> planner_node -> ingestion_node -> code_qa_node -> END
     """
     builder = StateGraph(GraphState)
 
+    builder.add_node("file_reader_node", file_reader_node)
     builder.add_node("planner_node", planner_node)
     builder.add_node("ingestion_node", ingestion_node)
     builder.add_node("code_qa_node", code_qa_node)
 
-    # Simple flow for now: always ingest, then QA
-    builder.add_edge(START, "planner_node")
+    # Single, linear flow (no parallel START edges)
+    builder.add_edge(START, "file_reader_node")
+    builder.add_edge("file_reader_node", "planner_node")
     builder.add_edge("planner_node", "ingestion_node")
     builder.add_edge("ingestion_node", "code_qa_node")
     builder.add_edge("code_qa_node", END)
 
-
     graph = builder.compile()
     return graph
+
 
 
 graph_app = build_graph()

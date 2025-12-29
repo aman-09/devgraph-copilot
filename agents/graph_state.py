@@ -23,6 +23,8 @@ class GraphState(TypedDict, total=False):
 
     needs_ingestion: Optional[bool]         # Planner sets this to True if ingestion is needed
 
+    file_content: Optional[str]             # File content for ingestion
+
 
 
 
