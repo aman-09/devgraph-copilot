@@ -12,7 +12,7 @@ Planned sections:
 
 3. **Using RAG for docs and code**
    - Chunking and indexing project documentation and code comments.
-   - Choosing embeddings and vector store for this agent.[web:236]
+   - Choosing embeddings and vector store for this agent.
 
 4. **Implementing the LangChain chain**
    - Prompt design for documentation-style answers.
@@ -21,12 +21,12 @@ Planned sections:
 5. **Wrapping the agent as a LangGraph node**
    - Node function signature.
    - Reading/writing the right `GraphState` fields.
-   - Handling errors and empty results.[web:221]
+   - Handling errors and empty results.
 
 6. **Integrating with MCP tools (optional)**
    - Using tools to read files, list docs, or fetch external references.
-   - How the node decides when to call a tool vs. only RAG.[web:244]
+   - How the node decides when to call a tool vs. only RAG.
 
 7. **Tests and demo flow**
    - Unit tests for the chain and retrieval logic.
-   - End-to-end demo script: example questions, expected behavior, and how to present this agent in an interview.[web:261]
+   - End-to-end demo script: example questions, expected behavior, and how to present this agent in an interview.

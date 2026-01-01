@@ -4,7 +4,7 @@
 
 - Client sends `GET /`.
 - FastAPI handles the request in `app.main.read_root`.
-- Returns static JSON with a simple Phase 1 message so you can test the server.[web:221]
+- Returns static JSON with a simple Phase 1 message so you can test the server.
 
 ## 2. Phase 2 – Two-node LangGraph flow
 
@@ -17,7 +17,7 @@
   - `echo_node` (Phase 2):
     - Reads `user_input`.
     - Writes an echo-style `reply` back into the state.
-- FastAPI returns `reply` from `GraphState` to the client.[web:221]
+- FastAPI returns `reply` from `GraphState` to the client.
 
 ## 3. Phase 3 – Fake RAG code-QA flow
 
@@ -31,5 +31,5 @@
      - Calls `get_vector_store()` from `agents/ingestion_helper.py`.
      - Uses `dummy_embedding(user_input)` (Phase 3 fake RAG) to embed the query.
      - Searches `InMemoryVectorStore` for top matching chunks.
-     - Writes `retrieved_chunks` and a `[Fake RAG]` style `reply` into the state.[web:249]
-- FastAPI returns `reply` (and, when needed for debugging or demo, `retrieved_chunks`) in the HTTP response.[web:236]
+     - Writes `retrieved_chunks` and a `[Fake RAG]` style `reply` into the state.
+- FastAPI returns `reply` (and, when needed for debugging or demo, `retrieved_chunks`) in the HTTP response.

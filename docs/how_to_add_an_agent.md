@@ -10,13 +10,13 @@
 
 2. **Decide GraphState fields to read/write**
    - List which keys the agent needs to read (e.g., `user_input`, `retrieved_chunks`).
-   - Decide what it will write back (e.g., `reply`, `analysis`, `tool_results`).[web:221]
+   - Decide what it will write back (e.g., `reply`, `analysis`, `tool_results`).
 
 3. **Implement the core logic (chain/tools/RAG)**
    - Build a LangChain chain or tool wrapper that does the real work:
      - Prompt + LLM.
      - Optional RAG (retrieval over vector store).
-     - Optional MCP/tool calls.[web:236]
+     - Optional MCP/tool calls.
    - Keep this logic independent from LangGraph so it can be tested alone.
 
 4. **Wrap the logic in a LangGraph node function**
@@ -24,13 +24,13 @@
    - Inside the node:
      - Read the needed fields from `state`.
      - Call the chain/tools.
-     - Update `state` with new fields (e.g., `reply`, `retrieved_chunks`).[web:221]
+     - Update `state` with new fields (e.g., `reply`, `retrieved_chunks`).
 
 5. **Register the node and edges in `graph_builder.py`**
    - Add the node to the graph with a clear name (e.g., `"repo_explainer_node"`).
    - Update edges so the planner (or previous node) can route into it:
      - Either from `planner_node` directly.
-     - Or after another node, depending on your flow.[web:221][web:243]
+     - Or after another node, depending on your flow.
 
 6. **Add tests and update docs**
    - Add unit tests for the core logic (without LangGraph).
@@ -38,7 +38,7 @@
    - Update:
      - `architecture.md` (where the new agent sits in the system).
      - `code_flow.md` (how a request reaches this agent).
-     - `interview_guide.md` (one or two sentences on what this agent does).[web:222]
+     - `interview_guide.md` (one or two sentences on what this agent does).
 
 ## 2. Existing example nodes
 
@@ -49,6 +49,6 @@
 - **`code_qa_node`**:
   - Reads: `user_input`, `message_type`.
   - Uses RAG helpers from `rag/` and `agents/ingestion_helper.py`.
-  - Writes: `retrieved_chunks`, `reply`.[web:221]
+  - Writes: `retrieved_chunks`, `reply`.
 
-New agents should follow the same pattern: read from `GraphState`, call their own logic or tools, write updates back to `GraphState`, and get wired into the graph in `graph_builder.py` with clear edges from the planner or other nodes.[web:221][web:243]
+New agents should follow the same pattern: read from `GraphState`, call their own logic or tools, write updates back to `GraphState`, and get wired into the graph in `graph_builder.py` with clear edges from the planner or other nodes.
