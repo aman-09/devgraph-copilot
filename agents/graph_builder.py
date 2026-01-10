@@ -46,9 +46,12 @@ def planner_node(state: GraphState) -> GraphState:
     user_input = state.get("user_input", "")
     msg_type = "question" if user_input.strip().endswith("?") else "statement"
 
-    # Very simple routing rule for now
     text = user_input.lower()
-    if "read info" in text or "file" in text:
+
+    # New: simple design-intent detection
+    if any(kw in text for kw in ["architecture", "system design", "design explain"]):
+        target_agent = "design_explainer"
+    elif "read info" in text or "file" in text:
         target_agent = "file_reader"
     else:
         target_agent = "code_qa"
@@ -67,6 +70,7 @@ def planner_node(state: GraphState) -> GraphState:
     new_state["needs_ingestion"] = needs_ingestion
     new_state["target_agent"] = target_agent
     return new_state
+
 
 
 
@@ -199,14 +203,16 @@ def build_graph():
     builder.add_node("planner_node", planner_node)
     builder.add_node("ingestion_node", ingestion_node)
     builder.add_node("code_qa_node", code_qa_node)
+    builder.add_node("design_explainer_node", design_explainer_node)  # NEW
 
     # Single, linear flow (no parallel START edges)
     builder.add_edge(START, "file_reader_node")
     builder.add_edge("file_reader_node", "planner_node")
     builder.add_edge("planner_node", "ingestion_node")
     builder.add_edge("ingestion_node", "code_qa_node")
-    builder.add_edge("code_qa_node", END)
-
+    builder.add_edge("code_qa_node", "design_explainer_node")         # NEW
+    builder.add_edge("design_explainer_node", END)                    # NEW
+    
     graph = builder.compile()
     return graph
 

@@ -52,3 +52,60 @@
   - Uses local embeddings from `sentence-transformers` to query the vector store.
   - Calls an LLM (via LangChain `ChatOpenAI`) with `retrieved_chunks` as context.
   - Returns a natural language answer in `reply`, suitable to send directly to the frontend.
+
+
+
+  Planner routing and Design Explainer node
+DevGraph Copilot uses a simple planner to route user requests through different agents in the LangGraph workflow. The current graph supports:
+
+A Code QA agent for standard RAG-style answers.
+
+A Design Explainer agent for interview-style architecture explanations.
+
+Planner routing
+The planner_node inspects the user_input and sets a target_agent in GraphState:
+
+If the message contains design keywords (e.g. "architecture", "system design", "design explain"), it routes to the Design Explainer:
+
+target_agent = "design_explainer".
+
+If the message mentions "read info" or "file", it routes to the File Reader:
+
+target_agent = "file_reader".
+
+Otherwise, it defaults to the Code QA agent:
+
+target_agent = "code_qa".
+
+The planner also sets message_type ("question" vs "statement") and flags needs_ingestion, which controls whether the ingestion node rebuilds the vector store.
+
+Graph flow
+The compiled LangGraph pipeline is:
+
+START → file_reader_node → planner_node → ingestion_node → code_qa_node → design_explainer_node → END
+
+For every request:
+
+file_reader_node can load sample_data/info.txt when appropriate.
+
+planner_node decides which agent should ultimately answer.
+
+ingestion_node ensures the vector store is initialized/refreshed from sample_data.
+
+code_qa_node always:
+
+Embeds user_input.
+
+Runs vector search.
+
+Produces a QA-style reply when use_llm is enabled (Groq) or a RAG-only reply when disabled.
+
+design_explainer_node:
+
+Reuses retrieved_chunks from code_qa_node.
+
+If target_agent == "design_explainer" and LLM is enabled, calls explain_design_with_context to overwrite reply with a system-design-style explanation.
+
+Otherwise, it effectively passes through the QA reply unchanged.
+
+This setup lets the same RAG backbone serve both normal “bug/feature” questions and higher-level “explain the architecture” prompts without changing the client API.
