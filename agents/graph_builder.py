@@ -118,11 +118,13 @@ def code_qa_node(state: GraphState) -> GraphState:
     # 1) RAG retrieval (always)
     store = get_vector_store()
     query_emb = embed_text(user_input)
-    top_chunks = store.search(query_emb, top_k=3)
+    top_chunks = store.search(query_emb, top_k=10)
     retrieved_texts = [c.text for c in top_chunks]
+    logger.info("code_qa_node: retrieved_texts sample: %s", retrieved_texts[:3])
+
 
     # 2) If LLM disabled, return RAG-only answer
-    if not settings.use_llm or not settings.openai_api_key:
+    if not settings.use_llm or not settings.groq_api_key:
         joined_snippets = " | ".join(retrieved_texts) if retrieved_texts else "No relevant text found."
         reply = (
             f"[RAG only] You asked: '{user_input}'. "
@@ -166,7 +168,7 @@ def design_explainer_node(state: GraphState) -> GraphState:
     if not user_input:
         return {"reply": "I did not receive any input.", "retrieved_chunks": retrieved_texts}
 
-    if not settings.use_llm or not settings.openai_api_key:
+    if not settings.use_llm or not settings.groq_api_key:
         # Fallback to normal RAG-style reply if LLM is disabled
         return code_qa_node(state)
 
