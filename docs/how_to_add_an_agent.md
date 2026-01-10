@@ -52,3 +52,15 @@
   - Writes: `retrieved_chunks`, `reply`.
 
 New agents should follow the same pattern: read from `GraphState`, call their own logic or tools, write updates back to `GraphState`, and get wired into the graph in `graph_builder.py` with clear edges from the planner or other nodes.
+
+
+
+High-level system view:
+current graph understanding into a step-by-step guide:
+
+Steps:
+1. Create a new handler function in agents/code_qa_chain.py or a new file for the agent logic.
+2. Register a node in agents/graph_builder.py StateGraph.
+3. ​Update planner to select the new target_agent based on message intent.
+4. Optionally, define any extra tools or vector filters this agent will use.
+5. ​Add tests or sample prompts in docs.

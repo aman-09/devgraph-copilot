@@ -30,3 +30,14 @@ Planned sections:
 7. **Tests and demo flow**
    - Unit tests for the chain and retrieval logic.
    - End-to-end demo script: example questions, expected behavior, and how to present this agent in an interview.
+
+
+
+High-level system view:
+Describe how a new agent (e.g., design_explainer) would fit:
+Define a new node in graph_builder.py for the agent (e.g., design_explainer_node).
+Extend planner logic to sometimes route to design_explainer based on intent keywords like “architecture”, “design”, “flow”.
+
+Node implementation:
+Option A: Use same vector store but with a “design-focused” prompt template.
+Option B: Retrieve only from docs/ files for design questions.

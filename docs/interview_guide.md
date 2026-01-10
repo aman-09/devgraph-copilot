@@ -119,3 +119,19 @@ These are the kinds of follow-up questions to practice:
 
 - How do you secure write operations?
   - Mention separating read-only tools from write tools, adding explicit confirmations, and using role-based checks before executing actions.
+
+
+
+High-level system view:
+Capture “storytelling” about the system:
+
+Key talking points:
+Why agentic RAG instead of a single RAG chain.
+​How the planner reduces hallucination by deciding when to ingest and what agent to call.
+​Design choices: local embeddings, simple file-based vector store, explicit logging for ingestion and retrieval.
+
+
+Common interview questions:
+“How does your system ensure answers are grounded?”
+“How would you scale ingestion and retrieval?”
+

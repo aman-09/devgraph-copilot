@@ -68,3 +68,19 @@ Near-term improvements:
   - `architecture.md` kept as a living system diagram.
   - `code_flow.md` showing request paths per phase.
   - `interview_guide.md` with ready-to-say answers for common questions.
+
+
+
+Summarize the current milestone and next ones:
+Current status:
+End-to-end agentic RAG working on local repo with ingestion, planner, and QA.
+
+Next milestones:
+Improve retrieval (chunking & top_k).
+Add specialized agents (design explainer, tests agent, documentation agent).
+Better observability (log retrieved chunks, add simple metrics).
+
+
+
+
+

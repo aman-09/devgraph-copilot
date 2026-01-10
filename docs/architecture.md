@@ -109,3 +109,17 @@ If target_agent == "design_explainer" and LLM is enabled, calls explain_design_w
 Otherwise, it effectively passes through the QA reply unchanged.
 
 This setup lets the same RAG backbone serve both normal “bug/feature” questions and higher-level “explain the architecture” prompts without changing the client API.
+
+
+
+High-level system view:
+Purpose: Agentic RAG backend (DevGraph Copilot) for answering questions about a codebase and docs using local embeddings and LangGraph.
+​
+Core components:
+FastAPI app (app/main.py) exposing /api/chat.
+LangGraph workflow (agents/graph_builder.py) orchestrating planner → file_reader → ingestion → code_qa.
+​RAG layer (rag/embeddings.py, rag/vectorstore.py, rag/chunking.py) using all-MiniLM-L6-v2.
+​
+Data flow:
+User query → planner decides agent & whether to run ingestion → ingestion scans repo & builds vector store → code_qa retrieves chunks → LLM (Groq) produces answer.
+
