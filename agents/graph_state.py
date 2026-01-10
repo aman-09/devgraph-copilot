@@ -25,6 +25,9 @@ class GraphState(TypedDict, total=False):
 
     file_content: Optional[str]             # File content for ingestion
 
+    # New: planner routing decision
+    target_agent: Optional[str]  # e.g. "code_qa" or "file_reader"
+
 
 
 

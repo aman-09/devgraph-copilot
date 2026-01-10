@@ -77,6 +77,15 @@ With this, I can say that my system already has:
 - A simple tool-style agent (file reader) that shows how to integrate external data into the state before answering.
 
 
+### Planner routing between agents
+
+The planner does more than just classify messages; it also decides **which agent to route to** using a simple `target_agent` flag in the shared `GraphState`.
+
+For normal questions, the planner sets `target_agent="code_qa"`, so the request flows into the RAG-based code-QA node.  
+For messages that look like file-related requests (for example, containing words like “file” or “read info”), the planner can set `target_agent="file_reader"`, which is the first step towards routing to different tool-style agents from the same planner.
+
+
+
 
 ## 4. Local vs API modes
 

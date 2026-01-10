@@ -7,7 +7,7 @@ from .graph_state import GraphState
 from .ingestion_helper import get_vector_store, init_or_refresh_vector_store, INGESTION_RAN
 from rag.embeddings import embed_text
 from app.config import settings
-from .code_qa_chain import answer_with_context
+from .code_qa_chain import answer_with_context, explain_design_with_context
 
 logger = logging.getLogger(__name__)
 
@@ -17,13 +17,13 @@ INGESTION_MAX_AGE_MINUTES = 30  # simple policy for now
 from pathlib import Path
 
 def file_reader_node(state: GraphState) -> GraphState:
-    """
-    Simple tool-style node:
-    reads a fixed text file from sample_data and stores its content in state.
-    """
-    base_dir = Path(__file__).resolve().parent.parent  # project root-ish
+    # If planner (previous run) said we don't need file_reader, just pass through
+    if state.get("target_agent") not in (None, "file_reader"):
+        return state
+
+    base_dir = Path(__file__).resolve().parent.parent
     data_dir = base_dir / "sample_data"
-    file_path = data_dir / "info.txt"  # create this file yourself
+    file_path = data_dir / "info.txt"
 
     try:
         content = file_path.read_text(encoding="utf-8", errors="ignore")
@@ -32,8 +32,13 @@ def file_reader_node(state: GraphState) -> GraphState:
 
     new_state: GraphState = dict(state)
     new_state["file_content"] = content
-    logger.info("file_reader_node: read %d characters from %s", len(content), file_path)
+    logger.info(
+        "file_reader_node: read %d characters from %s",
+        len(content),
+        file_path,
+    )
     return new_state
+
 
 
 
@@ -41,11 +46,18 @@ def planner_node(state: GraphState) -> GraphState:
     user_input = state.get("user_input", "")
     msg_type = "question" if user_input.strip().endswith("?") else "statement"
 
-    # Use global flag to decide ingestion, since state isn't persisted between runs
+    # Very simple routing rule for now
+    text = user_input.lower()
+    if "read info" in text or "file" in text:
+        target_agent = "file_reader"
+    else:
+        target_agent = "code_qa"
+
     needs_ingestion = not INGESTION_RAN
     logger.info(
-        "Planner: message_type=%s, needs_ingestion=%s, user_input='%s'",
+        "Planner: message_type=%s, target_agent=%s, needs_ingestion=%s, user_input='%s'",
         msg_type,
+        target_agent,
         needs_ingestion,
         user_input,
     )
@@ -53,6 +65,7 @@ def planner_node(state: GraphState) -> GraphState:
     new_state: GraphState = dict(state)
     new_state["message_type"] = msg_type
     new_state["needs_ingestion"] = needs_ingestion
+    new_state["target_agent"] = target_agent
     return new_state
 
 
@@ -133,6 +146,44 @@ def code_qa_node(state: GraphState) -> GraphState:
             "retrieved_chunks": retrieved_texts,
             "reply": fallback,
         }
+
+
+
+def design_explainer_node(state: GraphState) -> GraphState:
+    """
+    Design explainer node.
+
+    - Assumes RAG has already run (retrieved_chunks is filled).
+    - Uses a system-design-style prompt to explain the architecture.
+    """
+    user_input = state.get("user_input", "")
+    retrieved_texts = state.get("retrieved_chunks", [])
+
+    if not user_input:
+        return {"reply": "I did not receive any input.", "retrieved_chunks": retrieved_texts}
+
+    if not settings.use_llm or not settings.openai_api_key:
+        # Fallback to normal RAG-style reply if LLM is disabled
+        return code_qa_node(state)
+
+    try:
+        llm_answer = explain_design_with_context(user_input, retrieved_texts)
+        return {
+            "retrieved_chunks": retrieved_texts,
+            "reply": llm_answer,
+        }
+    except Exception as e:
+        fallback = (
+            f"[Design explainer fallback] Retrieved {len(retrieved_texts)} snippet(s) "
+            f"but LLM call failed: {e}"
+        )
+        return {
+            "retrieved_chunks": retrieved_texts,
+            "reply": fallback,
+        }
+
+
+
 
 
 

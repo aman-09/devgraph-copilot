@@ -62,6 +62,41 @@ async def chat_endpoint(request: ChatRequest):
     )
     
 
+from agents.ingestion_helper import get_vector_store
+from rag.embeddings import embed_text
+from agents.code_qa_chain import explain_design_with_context
+
+
+class DesignExplainRequest(BaseModel):
+    message: str
+
+class DesignExplainResponse(BaseModel):
+    reply: str
+    retrieved_chunks: List[str]
+
+
+@app.post("/api/design-explain", response_model=DesignExplainResponse)
+async def design_explain_endpoint(request: DesignExplainRequest):
+    """
+    Test endpoint to exercise explain_design_with_context using the same RAG pipeline.
+    """
+    user_input = request.message
+
+    # 1) RAG retrieval (same as code_qa_node)
+    store = get_vector_store()
+    query_emb = embed_text(user_input)
+    top_chunks = store.search(query_emb, top_k=3)
+    retrieved_texts = [c.text for c in top_chunks]
+
+    # 2) Design-style LLM answer
+    answer = explain_design_with_context(user_input, retrieved_texts)
+
+    return DesignExplainResponse(
+        reply=answer,
+        retrieved_chunks=retrieved_texts,
+    )
+
+
 
 
 # This is the absolute minimum FastAPI app.

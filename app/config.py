@@ -1,20 +1,22 @@
 from pydantic_settings import BaseSettings
 
-
 class Settings(BaseSettings):
-    app_name: str = "DevGraph Copilot"
-    environment: str = "local"
+    # General
+    app_name: str = "DevGraph Copilot"   # <-- add this
 
-    # LLM-related
-    openai_api_key: str | None = None
-    llm_model_name: str = "gpt-4o-mini"  # or any compatible model id
-    use_llm: bool = False  # <-- new
+    # LLM config
+    use_llm: bool = False
+    llm_model_name: str = "llama-3.3-70b-versatile"
+    llm_base_url: str = "https://api.groq.com/openai/v1"
+    groq_api_key: str = ""
 
     class Config:
         env_file = ".env"
 
-
 settings = Settings()
+
+
+
 
 
 # This lets you load environment variables later.
